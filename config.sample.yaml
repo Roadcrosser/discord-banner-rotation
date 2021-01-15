@@ -1,0 +1,27 @@
+# Bot token
+TOKEN: abalabahaha
+
+# How long in seconds until the next banner rotation. If it's too short Discord won't like it so keep it to at least an hour.
+INTERVAL: 3601
+# ID of the guild to function in.
+GUILD_ID: 0
+# Folder directory with all the banners. Can be nested. Only .png files will be used.
+FILEPATH: banners/
+
+# ID of the owner. Can reload banners.
+OWNER_ID: 0
+# Role ID for people who can reload banners.
+MAINTAINER_ROLE: 0
+
+# Command to run to reload the banners. Run this after updating the banners in the folder.
+RELOAD_CMD: +reloadbanners
+
+# If it can't find the guild or has no permissions, how long until it tries again.
+RETRY_INTERVAL: 5
+
+# Channel ID for logging banner changes.
+LOG_CHANNEL_ID: 0
+
+
+# Command to run to eval. Probably don't set this unless to debug.
+EVAL_CMD: null
