@@ -9,6 +9,6 @@ Usage:
  - Fill specified banners folder with banners (cropped to size)
  - Run `main.py`
 
-Run the reload command to reload all banners based on what's in the file. This will not repeat completed banners but will remove any that are no longer in the files.
+Run the reload command to reload all banners based on what's in the folder. This will not repeat completed banners but will remove any that are no longer in the folders.
 
 Users can say "what banner is this?" or similar to bring up stats on the banners.
