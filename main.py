@@ -74,9 +74,7 @@ async def display_banner_info(message):
     done_length = len(bot.done_banners)
     queue_length = len(bot.banner_queue)
     banner_total = done_length + queue_length
-    msg = """*Banner info:*
-
-{} banners in the pool. Current banner: `{}`
+    msg = """{} banners in the pool. Current banner: `{}`
 Percent exhausted: {:.2f}% ({}/{}, {} rotations until exhaustion)""".format(
         banner_total,
         bot.current_banner,

@@ -2,7 +2,7 @@
 TOKEN: abalabahaha
 
 # How long in seconds until the next banner rotation. If it's too short Discord won't like it so keep it to at least an hour.
-INTERVAL: 3601
+INTERVAL: 3661
 # ID of the guild to function in.
 GUILD_ID: 0
 # Folder directory with all the banners. Can be nested. Only .png files will be used.
