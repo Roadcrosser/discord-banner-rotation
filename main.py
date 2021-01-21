@@ -170,6 +170,7 @@ def reload_banners():
     for fl in bot.done_banners | curr_banners:
         if not fl in seen_banners:
             curr_banners.discard(fl)
+            bot.done_banners.discard(fl)
             removed_banner_count += 1
 
     if new_banner_count > 0:
