@@ -45,19 +45,19 @@ async def on_message(message):
         return
 
     if re.match(
-        "^((what|which) banner is this|what( is|'?s) this banner)\??$",
+        "^((what|which) banner is this|(what( is|'?s)|which is) th(is|e) banner)\??$",
         message.content.lower(),
     ):
         await display_banner_info(message)
-    elif re.match("^who( is|'?s) this banner\??$", message.content.lower()):
+    elif re.match("^who( is|'?s) th(is|e) banner\??$", message.content.lower()):
         await message.channel.send("me")
-    elif re.match("^why( is|'?s) this banner\??$", message.content.lower()):
+    elif re.match("^why( is|'?s) th(is|e) banner\??$", message.content.lower()):
         await message.channel.send("yeah")
-    elif re.match("^where( is|'?s) this banner\??$", message.content.lower()):
+    elif re.match("^where( is|'?s) th(is|e) banner\??$", message.content.lower()):
         await message.channel.send("here")
-    elif re.match("^when( is|'?s) this banner\??$", message.content.lower()):
+    elif re.match("^when( is|'?s) th(is|e) banner\??$", message.content.lower()):
         await message.channel.send("now")
-    elif re.match("^how( is|'?s) this banner\??$", message.content.lower()):
+    elif re.match("^how( is|'?s) th(is|e) banner\??$", message.content.lower()):
         await message.channel.send("the banner is doing well")
     elif message.content.lower() == config.get("RELOAD_CMD") and (
         is_maintainer(message.author)
