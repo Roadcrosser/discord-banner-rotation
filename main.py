@@ -5,6 +5,7 @@ import os
 import yaml
 import asyncio
 import re
+from io import BytesIO
 
 bot = discord.Client()
 
@@ -94,7 +95,17 @@ Percent exhausted: {:.2f}% ({}/{}, {} rotations until exhaustion)""".format(
         queue_length,
     )
 
-    await message.channel.send(msg)
+    image = get_banner_data(bot.current_banner)
+
+    if image:
+        b = BytesIO()
+        b.write(image)
+        b.seek(0)
+        image = discord.File(b, bot.current_banner.split("/")[-1])
+
+    await message.channel.send(
+        msg, file=image,
+    )
 
 
 async def guild_banner_loop():
@@ -125,21 +136,39 @@ async def update_banner_log(new_banner):
     await channel.send(f"The banner is now `{new_banner}`")
 
 
+def get_banner_data(banner):
+    fp = banners_fp + banner
+    ret = None
+    if os.path.isfile(fp):
+        ret = open(banners_fp + banner, "rb").read()
+    return ret
+
+
+def reshuffle_queue():
+    log("Banners exhausted. Reshuffling...")
+    shuffle_into_banner_queue(bot.done_banners)
+    bot.done_banners.clear()
+
+
 async def update_banner(guild):
 
-    if not bot.banner_queue:
-        log("Banners exhausted. Reshuffling...")
-        shuffle_into_banner_queue(bot.done_banners)
-        bot.done_banners.clear()
+    image = None
+    while not image:
+        if not bot.banner_queue:
+            reshuffle_queue()
 
-    new_banner = bot.banner_queue.pop(0)
+        new_banner = bot.banner_queue.pop(0)
 
-    image = open(banners_fp + new_banner, "rb").read()
+        image = get_banner_data(new_banner)
 
-    await guild.edit(banner=image)
+        if not image:
+            log(f"Banner `{new_banner}` not found. Skipping...")
+            continue
 
-    bot.current_banner = new_banner
-    bot.done_banners.add(new_banner)
+        await guild.edit(banner=image)
+
+        bot.current_banner = new_banner
+        bot.done_banners.add(new_banner)
 
     return new_banner
 
