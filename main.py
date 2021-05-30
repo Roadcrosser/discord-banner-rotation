@@ -4,6 +4,8 @@ import datetime
 import os
 import yaml
 import asyncio
+import aiohttp
+from PIL import Image, ImageChops
 import re
 from io import BytesIO
 
@@ -28,9 +30,11 @@ async def on_ready():
     log("Running...")
 
     if not bot.start_timestamp:
+        bot.session = aiohttp.ClientSession()
         bot.start_timestamp = datetime.datetime.utcnow()
 
         reload_banners()
+        await register_cold_banner()
         bot.loop.create_task(guild_banner_loop())
 
 
@@ -79,6 +83,51 @@ def is_maintainer(member):
 
 def log(message):
     print(f"[{datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}] {message}")
+
+
+async def get_cold_banner():
+    guild = get_guild()
+    banner_url = guild.banner_url_as(format="png")
+
+    if not banner_url:
+        return None
+
+    async with bot.session.get(str(banner_url)) as r:
+        resp = await r.read()
+
+    curr_banner_img = Image.open(BytesIO(resp)).convert("RGB")
+
+    banners_to_compare = bot.banner_queue + list(bot.done_banners)
+
+    for b in banners_to_compare:
+        comp_banner_data = get_banner_data(b)
+
+        if not comp_banner_data:
+            continue
+
+        comp_banner_img = BytesIO()
+        comp_banner_img.write(comp_banner_data)
+        comp_banner_img.seek(0)
+
+        comp_banner_img = Image.open(comp_banner_img).convert("RGB")
+
+        diff = ImageChops.difference(curr_banner_img, comp_banner_img)
+
+        if not diff.getbbox():
+            return b
+
+    return None
+
+
+async def register_cold_banner():
+    print("Grabbing current banner...")
+    cold_banner = await get_cold_banner()
+    if cold_banner:
+        print(f"Found current banner: {cold_banner}")
+        bot.current_banner = cold_banner
+        bot.done_banners.add(cold_banner)
+    else:
+        print("Current banner not found.")
 
 
 async def display_banner_info(message):

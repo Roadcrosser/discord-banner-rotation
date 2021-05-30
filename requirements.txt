@@ -1,2 +1,4 @@
 PyYAML
+aiohttp
+pillow
 discord.py
