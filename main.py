@@ -127,6 +127,8 @@ async def register_cold_banner():
         log(f"Found current banner: {cold_banner}")
         bot.current_banner = cold_banner
         bot.done_banners.add(cold_banner)
+        if cold_banner in bot.banner_queue:
+            bot.banner_queue.remove(cold_banner)
     else:
         log("Current banner not found.")
 
