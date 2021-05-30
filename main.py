@@ -18,6 +18,7 @@ bot.start_timestamp = 0
 bot.done_banners = set()
 bot.banner_queue = []
 bot.current_banner = None
+bot.next_banner_time = None
 
 banners_fp = config["FILEPATH"]
 
@@ -120,14 +121,14 @@ async def get_cold_banner():
 
 
 async def register_cold_banner():
-    print("Grabbing current banner...")
+    log("Grabbing current banner...")
     cold_banner = await get_cold_banner()
     if cold_banner:
-        print(f"Found current banner: {cold_banner}")
+        log(f"Found current banner: {cold_banner}")
         bot.current_banner = cold_banner
         bot.done_banners.add(cold_banner)
     else:
-        print("Current banner not found.")
+        log("Current banner not found.")
 
 
 async def display_banner_info(message):
@@ -162,10 +163,27 @@ def get_guild():
 
 
 async def guild_banner_loop():
+    guild = get_guild()
+
+    interval_count = config["INTERVAL_COUNT"]
+    interval = 24 * 60 * 60 / interval_count
+
+    offset = -config["OFFSET"]  # Why does this have to be negated, I wonder?
+
+    now = datetime.datetime.utcnow()
+    today = datetime.datetime(now.year, now.month, now.day) + datetime.timedelta(
+        hours=offset
+    )
+
+    bot.next_banner_time = today
+
+    while now > bot.next_banner_time:
+        bot.next_banner_time += datetime.timedelta(seconds=interval)
+
     while True:
 
-        interval = config["INTERVAL"]
-        guild = get_guild()
+        log(f"Waiting until {bot.next_banner_time}...")
+        await discord.utils.sleep_until(bot.next_banner_time)
         log("Updating banner...")
         if guild and guild.me.guild_permissions.manage_guild:
             new_banner = await update_banner()
@@ -177,7 +195,7 @@ async def guild_banner_loop():
             interval = config.get("RETRY_INTERVAL", 5)
             log(f"Guild not found or no permissions. Retrying in {interval} seconds...")
 
-        await asyncio.sleep(interval)
+        bot.next_banner_time += datetime.timedelta(seconds=interval)
 
 
 async def update_banner_log(new_banner):

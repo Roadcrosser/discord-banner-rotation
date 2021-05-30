@@ -1,8 +1,11 @@
 # Bot token
 TOKEN: abalabahaha
 
-# How long in seconds until the next banner rotation. If it's too short Discord won't like it so keep it to at least an hour.
-INTERVAL: 3661
+# How long in hours from midnight of UTC to start the cycle
+OFFSET: 0
+# How many times a day the banner should change. If it's too large Discord won't like it so keep it to at least under 24.
+INTERVAL_COUNT: 16
+
 # ID of the guild to function in.
 GUILD_ID: 0
 # Folder directory with all the banners. Can be nested. Only .png files will be used.
