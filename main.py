@@ -108,14 +108,18 @@ Percent exhausted: {:.2f}% ({}/{}, {} rotations until exhaustion)""".format(
     )
 
 
+def get_guild():
+    return bot.get_guild(config["GUILD_ID"])
+
+
 async def guild_banner_loop():
     while True:
 
         interval = config["INTERVAL"]
-        guild = bot.get_guild(config["GUILD_ID"])
+        guild = get_guild()
         log("Updating banner...")
         if guild and guild.me.guild_permissions.manage_guild:
-            new_banner = await update_banner(guild)
+            new_banner = await update_banner()
             log(
                 f"Updated successfully to `{new_banner}`. Next update in {interval} seconds."
             )
@@ -150,7 +154,8 @@ def reshuffle_queue():
     bot.done_banners.clear()
 
 
-async def update_banner(guild):
+async def update_banner():
+    guild = get_guild()
 
     image = None
     while not image:
