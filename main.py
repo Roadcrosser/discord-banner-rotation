@@ -3,7 +3,7 @@ import random
 import datetime
 import os
 import yaml
-import asyncio
+import hashlib
 import aiohttp
 from PIL import Image, ImageChops
 import re
@@ -54,17 +54,29 @@ async def on_message(message):
         message.content.lower(),
     ):
         await display_banner_info(message)
-    elif re.match("^who( is|'?s) th(is|e) banner\??$", message.content.lower()):
-        await message.channel.send("me")
-    elif re.match("^why( is|'?s) th(is|e) banner\??$", message.content.lower()):
-        await message.channel.send("yeah")
-    elif re.match("^where( is|'?s) th(is|e) banner\??$", message.content.lower()):
-        await message.channel.send("here")
-    elif re.match("^when( is|'?s) th(is|e) banner\??$", message.content.lower()):
-        await message.channel.send("now")
-    elif re.match("^how( is|'?s) th(is|e) banner\??$", message.content.lower()):
-        await message.channel.send("the banner is doing well")
-    elif message.content.lower() == config.get("RELOAD_CMD") and (
+
+    elif re.match("^when( is|'?s) the next banner\??$", message.content.lower(),):
+        await message.channel.send(f"<t:{int(bot.next_banner_time.timestamp())}:R>")
+
+    for regex, response in [
+        ("^who( is|'?s) th(is|e) banner\??$", config.get("WHO_RESPONSES")),
+        ("^why( is|'?s) th(is|e) banner\??$", config.get("WHY_RESPONSES")),
+        ("^where( is|'?s) th(is|e) banner\??$", config.get("WHERE_RESPONSES")),
+        ("^when( is|'?s) th(is|e) banner\??$", config.get("WHEN_RESPONSES")),
+        ("^how( is|'?s) th(is|e) banner\??$", config.get("HOW_RESPONSES")),
+    ]:
+        if response and re.match(regex, message.content.lower()):
+            random_seed = int(
+                hashlib.sha512(bot.current_banner.encode()).hexdigest(), 16,
+            )
+
+            response_random = random.Random()
+            response_random.seed(random_seed)
+
+            await message.channel.send(response_random.choice(response))
+            return
+
+    if message.content.lower() == config.get("RELOAD_CMD") and (
         is_maintainer(message.author)
     ):
         await reload_cmd(message)

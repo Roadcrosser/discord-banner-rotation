@@ -25,6 +25,18 @@ RETRY_INTERVAL: 5
 # Channel ID for logging banner changes.
 LOG_CHANNEL_ID: 0
 
+# Responses for funny "who is the banner", "why is the banner", "how is the banner", etc.
+WHO_RESPONSES:
+  - me
+WHY_RESPONSES:
+  - yeah
+WHERE_RESPONSES:
+  - here
+WHEN_RESPONSES:
+  - now
+HOW_RESPONSES:
+  - the banner is doing well
+
 
 # Command to run to eval. Probably don't set this unless to debug.
 EVAL_CMD: null
