@@ -32,7 +32,7 @@ async def on_ready():
 
     if not bot.start_timestamp:
         bot.session = aiohttp.ClientSession()
-        bot.start_timestamp = datetime.datetime.utcnow()
+        bot.start_timestamp = datetime.datetime.now(datetime.timezone.utc)
 
         reload_banners()
         await register_cold_banner()
@@ -184,10 +184,10 @@ async def guild_banner_loop():
 
     offset = -config["OFFSET"]  # Why does this have to be negated, I wonder?
 
-    now = datetime.datetime.utcnow()
-    today = datetime.datetime(now.year, now.month, now.day) + datetime.timedelta(
-        hours=offset
-    )
+    now = datetime.datetime.now(datetime.timezone.utc)
+    today = datetime.datetime(
+        now.year, now.month, now.day, tzinfo=datetime.timezone.utc
+    ) + datetime.timedelta(hours=offset)
 
     bot.next_banner_time = today
 
