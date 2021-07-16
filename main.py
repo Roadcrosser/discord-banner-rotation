@@ -19,6 +19,7 @@ bot.done_banners = set()
 bot.banner_queue = []
 bot.current_banner = None
 bot.next_banner_time = None
+bot.banner_sources = {}
 
 banners_fp = config["FILEPATH"]
 
@@ -56,7 +57,17 @@ async def on_message(message):
         await display_banner_info(message)
 
     elif re.match("^when( is|'?s) the next banner\??$", message.content.lower(),):
-        await message.channel.send(f"<t:{int(bot.next_banner_time.timestamp())}:R>")
+        await message.channel.send(
+            f"<t:{int(bot.next_banner_time.timestamp())}:R>",
+            reference=message,
+            mention_author=False,
+        )
+
+    elif re.match(
+        "^(what( is|'?s) the banner source|where( is|'?s) the banner from)\??$",
+        message.content.lower(),
+    ):
+        await display_banner_source(message)
 
     for regex, response in [
         ("^who( is|'?s) th(is|e) banner\??$", config.get("WHO_RESPONSES")),
@@ -73,7 +84,11 @@ async def on_message(message):
             response_random = random.Random()
             response_random.seed(random_seed)
 
-            await message.channel.send(response_random.choice(response))
+            await message.channel.send(
+                response_random.choice(response),
+                reference=message,
+                mention_author=False,
+            )
             return
 
     if message.content.lower() == config.get("RELOAD_CMD") and (
@@ -88,6 +103,26 @@ async def on_message(message):
         await evaluate(message)
 
 
+async def display_banner_source(message):
+    response = "I don't know"
+    if not bot.current_banner in bot.banner_sources:
+        image = get_banner_data(bot.current_banner)
+
+        if image:
+            b = BytesIO()
+            b.write(image)
+            b.seek(0)
+
+            set_image_source(bot.current_banner, b, is_buffer=True)
+
+    img_source = bot.banner_sources.get(bot.current_banner)
+
+    if img_source:
+        response = f"This banner is from {img_source}"
+
+    await message.channel.send(response, reference=message, mention_author=False)
+
+
 def is_maintainer(member):
     return member.id == config.get("OWNER_ID") or config.get("MAINTAINER_ROLE") in [
         r.id for r in member.roles
@@ -96,6 +131,18 @@ def is_maintainer(member):
 
 def log(message):
     print(f"[{datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}] {message}")
+
+
+def set_image_source(fp, img, is_buffer=False):
+    if is_buffer:
+        img_obj = Image.open(img)
+        img.seek(0)
+        img = img_obj
+    img_source = img.info.get("Source")
+    if not img_source:
+        img_source = None
+
+    bot.banner_sources[fp] = img_source
 
 
 async def get_cold_banner():
@@ -122,7 +169,11 @@ async def get_cold_banner():
         comp_banner_img.write(comp_banner_data)
         comp_banner_img.seek(0)
 
-        comp_banner_img = Image.open(comp_banner_img).convert("RGB")
+        comp_banner_img = Image.open(comp_banner_img)
+
+        set_image_source(b, comp_banner_img)
+
+        comp_banner_img = comp_banner_img.convert("RGB")
 
         diff = ImageChops.difference(curr_banner_img, comp_banner_img)
 
@@ -166,11 +217,12 @@ Percent exhausted: {:.2f}% ({}/{}, {} rotation{} until exhaustion)""".format(
         b = BytesIO()
         b.write(image)
         b.seek(0)
+
+        set_image_source(bot.current_banner, b, is_buffer=True)
+
         image = discord.File(b, bot.current_banner.split("/")[-1])
 
-    await message.channel.send(
-        msg, file=image,
-    )
+    await message.channel.send(msg, file=image, reference=message, mention_author=False)
 
 
 def get_guild():
@@ -268,6 +320,8 @@ async def reload_cmd(message):
 
 
 def reload_banners():
+    bot.banner_sources = {}
+
     curr_banners = set(bot.banner_queue)
     seen_banners = set()
 
