@@ -118,7 +118,7 @@ async def display_banner_source(message):
     img_source = bot.banner_sources.get(bot.current_banner)
 
     if img_source:
-        response = f"This banner is from {img_source}"
+        response = f"the banner is from {img_source}"
 
     await message.channel.send(response, reference=message, mention_author=False)
 
