@@ -74,7 +74,7 @@ async def on_message(message):
         ("^why( is|'?s) th(is|e) banner\??$", config.get("WHY_RESPONSES")),
         ("^where( is|'?s) th(is|e) banner\??$", config.get("WHERE_RESPONSES")),
         ("^when( is|'?s) th(is|e) banner\??$", config.get("WHEN_RESPONSES")),
-        ("^how( is|'?s) th(is|e) banner\??$", config.get("HOW_RESPONSES")),
+        ("^how( is|'?s) th(is|e) banner( doing)?\??$", config.get("HOW_RESPONSES")),
     ]:
         if response and re.match(regex, message.content.lower()):
             random_seed = int(
