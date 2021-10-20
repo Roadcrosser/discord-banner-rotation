@@ -25,6 +25,9 @@ RETRY_INTERVAL: 5
 # Channel ID for logging banner changes.
 LOG_CHANNEL_ID: 0
 
+# File to record/recall banner progress between restarts. Script requires ability to read/write files in directory. Set to `null` to disable.
+BANNER_PROGRESS_RECORD: progress.txt
+
 # Responses for funny "who is the banner", "why is the banner", "how is the banner", etc.
 WHO_RESPONSES:
   - me
@@ -36,7 +39,8 @@ WHEN_RESPONSES:
   - now
 HOW_RESPONSES:
   - the banner is doing well
-
+WHAT_RESPONSES:
+  - sleeping
 
 # Command to run to eval. Probably don't set this unless to debug.
 EVAL_CMD: null

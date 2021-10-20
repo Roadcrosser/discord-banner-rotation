@@ -23,6 +23,8 @@ bot.banner_sources = {}
 
 banners_fp = config["FILEPATH"]
 
+banner_progress_record = config.get("BANNER_PROGRESS_RECORD")
+
 if not banners_fp.endswith("/"):
     banners_fp += "/"
 
@@ -37,6 +39,7 @@ async def on_ready():
 
         reload_banners()
         await register_cold_banner()
+        initialize_progress_record()
         bot.loop.create_task(guild_banner_loop())
 
 
@@ -46,6 +49,7 @@ async def on_message(message):
     if (
         message.author.bot
         or not message.content
+        or not isinstance(message.channel, discord.abc.GuildChannel)
         or not message.channel.permissions_for(message.guild.me).send_messages
     ):
         return
@@ -71,9 +75,10 @@ async def on_message(message):
 
     for regex, response in [
         ("^who( is|'?s) th(is|e) banner\??$", config.get("WHO_RESPONSES")),
-        ("^why( is|'?s) th(is|e) banner\??$", config.get("WHY_RESPONSES")),
+        ("^what( is|'?s) th(is|e) banner doing\??$", config.get("WHAT_RESPONSES")),
         ("^where( is|'?s) th(is|e) banner\??$", config.get("WHERE_RESPONSES")),
         ("^when( is|'?s) th(is|e) banner\??$", config.get("WHEN_RESPONSES")),
+        ("^why( is|'?s) th(is|e) banner\??$", config.get("WHY_RESPONSES")),
         ("^how( is|'?s) th(is|e) banner( doing)?\??$", config.get("HOW_RESPONSES")),
     ]:
         if response and re.match(regex, message.content.lower()):
@@ -183,6 +188,45 @@ async def get_cold_banner():
     return None
 
 
+def initialize_progress_record():
+    if not banner_progress_record:
+        return
+
+    if not os.path.isfile(banner_progress_record):
+        log("Progress record not found. Creating.")
+        reset_banner_progress()
+        return
+
+    log("Progress record found. Reading...")
+    with open(banner_progress_record, "r") as o:
+        banner_progress = o.read().split("\n")
+
+    log("Loading progress record...")
+    for b in banner_progress:
+        if b in bot.banner_queue or b == bot.current_banner:
+            if b in bot.banner_queue:
+                bot.banner_queue.remove(b)
+            bot.done_banners.add(b)
+
+
+def record_banner_progress(new_banner):
+    if not banner_progress_record:
+        return
+
+    log("Appending to progress record...")
+    with open(banner_progress_record, "a") as o:
+        o.write(f"{new_banner}\n")
+
+
+def reset_banner_progress():
+    if not banner_progress_record:
+        return
+
+    log("Resetting progress record...")
+    with open(banner_progress_record, "w+") as o:
+        pass
+
+
 async def register_cold_banner():
     log("Grabbing current banner...")
     cold_banner = await get_cold_banner()
@@ -285,6 +329,7 @@ def get_banner_data(banner):
 def reshuffle_queue():
     log("Banners exhausted. Reshuffling...")
     shuffle_into_banner_queue(bot.done_banners)
+    reset_banner_progress()
     bot.done_banners.clear()
 
 
@@ -307,6 +352,7 @@ async def update_banner():
         await guild.edit(banner=image)
 
         bot.current_banner = new_banner
+        record_banner_progress(new_banner)
         bot.done_banners.add(new_banner)
 
     return new_banner
