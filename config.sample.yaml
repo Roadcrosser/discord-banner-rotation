@@ -29,16 +29,27 @@ LOG_CHANNEL_ID: 0
 BANNER_PROGRESS_RECORD: progress.txt
 
 # Responses for funny "who is the banner", "why is the banner", "how is the banner", etc.
+# "Who is the banner"
 WHO_RESPONSES:
   - me
+
+# "Why is the banner"
 WHY_RESPONSES:
   - yeah
+
+# "Where is the banner"
 WHERE_RESPONSES:
   - here
+
+# "When is the banner"
 WHEN_RESPONSES:
   - now
+
+# "How is the banner"
 HOW_RESPONSES:
   - the banner is doing well
+
+# "What is the banner doing"
 WHAT_RESPONSES:
   - sleeping
 
