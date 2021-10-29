@@ -20,6 +20,7 @@ bot.banner_queue = []
 bot.current_banner = None
 bot.next_banner_time = None
 bot.banner_sources = {}
+bot.banner_authors = {}
 
 banners_fp = config["FILEPATH"]
 
@@ -60,7 +61,10 @@ async def on_message(message):
     ):
         await display_banner_info(message)
 
-    elif re.match("^when( is|'?s) the next banner\??$", message.content.lower(),):
+    elif re.match(
+        "^when( is|'?s) the next banner\??$",
+        message.content.lower(),
+    ):
         await message.channel.send(
             f"<t:{int(bot.next_banner_time.timestamp())}:R>",
             reference=message,
@@ -68,10 +72,16 @@ async def on_message(message):
         )
 
     elif re.match(
-        "^(what( is|'?s) the banner source|where( is|'?s) the banner from)\??$",
+        "^(what( is|'?s) the banner source|where( is|'?s) th(is|e) banner from)\??$",
         message.content.lower(),
     ):
         await display_banner_source(message)
+
+    elif re.match(
+        "^who (made|drew) th(is|e) banner\??$",
+        message.content.lower(),
+    ):
+        await display_banner_author(message)
 
     for regex, response in [
         ("^who( is|'?s) th(is|e) banner\??$", config.get("WHO_RESPONSES")),
@@ -83,7 +93,8 @@ async def on_message(message):
     ]:
         if response and re.match(regex, message.content.lower()):
             random_seed = int(
-                hashlib.sha512(bot.current_banner.encode()).hexdigest(), 16,
+                hashlib.sha512(bot.current_banner.encode()).hexdigest(),
+                16,
             )
 
             response_random = random.Random()
@@ -118,14 +129,38 @@ async def display_banner_source(message):
             b.write(image)
             b.seek(0)
 
-            set_image_source(bot.current_banner, b, is_buffer=True)
+            set_image_metadata(bot.current_banner, b, is_buffer=True)
 
     img_source = bot.banner_sources.get(bot.current_banner)
 
     if img_source:
         response = f"the banner is from {img_source}"
 
-    await message.channel.send(response, reference=message, mention_author=False)
+    await message.channel.send(
+        response, reference=message, allowed_mentions=discord.AllowedMentions.none()
+    )
+
+
+async def display_banner_author(message):
+    response = "I don't know"
+    if not bot.current_banner in bot.banner_authors:
+        image = get_banner_data(bot.current_banner)
+
+        if image:
+            b = BytesIO()
+            b.write(image)
+            b.seek(0)
+
+            set_image_metadata(bot.current_banner, b, is_buffer=True)
+
+    img_author = bot.banner_authors.get(bot.current_banner)
+
+    if img_author:
+        response = f"the banner was made by {img_author}"
+
+    await message.channel.send(
+        response, reference=message, allowed_mentions=discord.AllowedMentions.none()
+    )
 
 
 def is_maintainer(member):
@@ -138,16 +173,20 @@ def log(message):
     print(f"[{datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}] {message}")
 
 
-def set_image_source(fp, img, is_buffer=False):
+def set_image_metadata(fp, img, is_buffer=False):
     if is_buffer:
         img_obj = Image.open(img)
         img.seek(0)
         img = img_obj
     img_source = img.info.get("Source")
+    img_author = img.info.get("Author")
     if not img_source:
         img_source = None
+    if not img_author:
+        img_author = None
 
     bot.banner_sources[fp] = img_source
+    bot.banner_authors[fp] = img_author
 
 
 async def get_cold_banner():
@@ -176,7 +215,7 @@ async def get_cold_banner():
 
         comp_banner_img = Image.open(comp_banner_img)
 
-        set_image_source(b, comp_banner_img)
+        set_image_metadata(b, comp_banner_img)
 
         comp_banner_img = comp_banner_img.convert("RGB")
 
@@ -262,7 +301,7 @@ Percent exhausted: {:.2f}% ({}/{}, {} rotation{} until exhaustion)""".format(
         b.write(image)
         b.seek(0)
 
-        set_image_source(bot.current_banner, b, is_buffer=True)
+        set_image_metadata(bot.current_banner, b, is_buffer=True)
 
         image = discord.File(b, bot.current_banner.split("/")[-1])
 
