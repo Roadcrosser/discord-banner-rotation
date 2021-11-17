@@ -415,7 +415,7 @@ def reload_banners():
 
     for wk in os.walk(banners_fp):
         for fl in wk[2]:
-            if not fl.endswith(".png"):
+            if not fl.endswith((".png", ".gif")):
                 continue
             pdir = wk[0]
             if not pdir.endswith("/"):
