@@ -488,7 +488,7 @@ def reload_banners():
 
 
 def shuffle_into_banner_queue(new_queue):
-    bot.banner_queue = random.sample(new_queue, k=len(new_queue))
+    bot.banner_queue = random.sample(list(new_queue), k=len(new_queue))
 
 
 _ = None
