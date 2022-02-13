@@ -5,7 +5,7 @@ Also called Chocomint Pie because it's in Python and this is a clone of a bot ca
 Usage:
  - Install Python 3.7.x (idk about later versions)
  - `pip install -r requirements.txt`
- - Copy `config.sample.yaml` to `config.yaml` and fill out details
+ - Copy `config.sample.yml` to `config.yml` and fill out details
  - Fill specified banners folder with banners (cropped to size)
  - Run `main.py`
 
