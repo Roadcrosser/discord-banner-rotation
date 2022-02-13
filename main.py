@@ -1,4 +1,4 @@
-import discord
+import disnake as discord
 import random
 import datetime
 import os
@@ -191,7 +191,7 @@ def set_image_metadata(fp, img, is_buffer=False):
 
 async def get_cold_banner():
     guild = get_guild()
-    banner_url = guild.banner_url_as(format="png")
+    banner_url = guild.banner.with_static_format("png").url
 
     if not banner_url:
         return None
