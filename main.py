@@ -191,6 +191,10 @@ def set_image_metadata(fp, img, is_buffer=False):
 
 async def get_cold_banner():
     guild = get_guild()
+
+    if not guild.banner:
+        return None
+
     banner_url = guild.banner.with_static_format("png").url
 
     if not banner_url:
