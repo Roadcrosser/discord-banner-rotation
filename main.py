@@ -225,7 +225,19 @@ async def get_cold_banner():
 
         diff = ImageChops.difference(curr_banner_img, comp_banner_img)
 
-        if not diff.getbbox():
+        total_pixels = curr_banner_img.width * curr_banner_img.height
+        matching_pixels = 0
+
+        colors = diff.getcolors(16777216)
+        if colors:
+            for c in colors:
+                if c[1] == (0,0,0):
+                    matching_pixels = c[0]
+                    break
+
+        diff_val = (matching_pixels / total_pixels)
+
+        if diff_val > .8:
             return b
 
     return None
