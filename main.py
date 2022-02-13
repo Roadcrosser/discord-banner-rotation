@@ -11,7 +11,7 @@ from io import BytesIO
 
 bot = discord.Client()
 
-with open("config.yaml") as fl:
+with open("config.yml") as fl:
     config = yaml.load(fl, Loader=yaml.FullLoader)
 
 bot.start_timestamp = 0
