@@ -28,6 +28,9 @@ LOG_CHANNEL_ID: 0
 # File to record/recall banner progress between restarts. Script requires ability to read/write files in directory. Set to `null` to disable.
 BANNER_PROGRESS_RECORD: progress.txt
 
+# Use an older method of checking image metadata. Less setup/installation required but does not get metadata for GIFs.  
+LEGACY_METADATA_CHECKING: true
+
 # Responses for funny "who is the banner", "why is the banner", "how is the banner", etc.
 # "Who is the banner"
 WHO_RESPONSES:

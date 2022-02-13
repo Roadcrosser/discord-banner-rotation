@@ -2,3 +2,4 @@ PyYAML
 aiohttp
 pillow
 disnake
+git+https://github.com/smarnach/pyexiftool.git

@@ -174,12 +174,35 @@ def log(message):
 
 
 def set_image_metadata(fp, img, is_buffer=False):
+    if config.get("LEGACY_METADATA_CHECKING", True):
+        legacy_set_image_metadata(fp, img, is_buffer)
+    else:
+        _set_image_metadata(fp)
+
+def legacy_set_image_metadata(fp, img, is_buffer=False):
     if is_buffer:
         img_obj = Image.open(img)
         img.seek(0)
         img = img_obj
     img_source = img.info.get("Source")
     img_author = img.info.get("Author")
+    if not img_source:
+        img_source = None
+    if not img_author:
+        img_author = None
+
+    bot.banner_sources[fp] = img_source
+    bot.banner_authors[fp] = img_author
+
+def _set_image_metadata(fp):
+    import exiftool
+
+    with exiftool.ExifTool() as et:
+        metadata = et.get_metadata(banners_fp + fp)
+        metadata = {k.split(":")[-1]: v for k, v in metadata.items()}
+
+    img_source = metadata.get("Source")
+    img_author = metadata.get("Author")
     if not img_source:
         img_source = None
     if not img_author:
@@ -197,17 +220,17 @@ async def get_cold_banner():
 
     banner_url = guild.banner.with_static_format("png").url
 
-    if not banner_url:
-        return None
-
     async with bot.session.get(str(banner_url)) as r:
         resp = await r.read()
 
-    curr_banner_img = Image.open(BytesIO(resp)).convert("RGB")
+    curr_banner_img = BytesIO(resp)
+    curr_banner_img.seek(0)
+
+    curr_banner_img = Image.open(curr_banner_img).convert("RGB")
 
     banners_to_compare = bot.banner_queue + list(bot.done_banners)
 
-    for b in banners_to_compare:
+    for i, b in enumerate(banners_to_compare):
         comp_banner_data = get_banner_data(b)
 
         if not comp_banner_data:
